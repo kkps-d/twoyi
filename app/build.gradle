@@ -11,8 +11,8 @@ plugins {
 }
 
 android {
-    compileSdkVersion 31
-    buildToolsVersion "30.0.3"
+    namespace = "io.twoyi"
+    compileSdk = 36
 
     def buildSerial = new SimpleDateFormat("MMddHHmm").format(new Date())
 
@@ -20,7 +20,7 @@ android {
         applicationId "io.twoyi"
         minSdkVersion 27
         //noinspection ExpiredTargetSdkVersion
-        targetSdkVersion 27
+        targetSdkVersion 28
         versionCode 10354
         versionName "0.5.4-${buildSerial}"
 
@@ -29,7 +29,6 @@ android {
         ndk {
             abiFilters "arm64-v8a"
         }
-        archivesBaseName = "twoyi_${versionName}"
     }
 
     buildTypes {
@@ -39,19 +38,42 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
     }
+    buildFeatures {
+        buildConfig = true
+    }
+    packaging {
+        jniLibs {
+            useLegacyPackaging = true
+        }
+    }
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
     }
 }
 
-task cargoBuild {
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        variant.outputs.each { output ->
+            def vName = output.versionName.orNull ?: "dev"
+            output.outputFileName.set("twoyi_${vName}.apk")
+        }
+    }
+}
+
+task cargoBuild(type: Exec) {
+    onlyIf {
+        !System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("windows")
+    }
+    workingDir new File(project.projectDir, "rs")
+    commandLine "sh", "build_rs.sh", "--release"
+}
+
+task verifyTwoyiNativeLib {
     doLast {
-        exec {
-            //切换到sh文件所在的目录，执行脚本
-            workingDir new File(project.projectDir, "rs")
-            //执行shell脚本 "," 传参
-            commandLine "sh", "build_rs.sh", "--release"
+        def lib = new File(project.projectDir, "src/main/jniLibs/arm64-v8a/libtwoyi.so")
+        if (!lib.exists()) {
+            throw new GradleException("Missing native lib: ${lib}. Build it from app/rs with cargo-xdk after installing Android NDK.")
         }
     }
 }
@@ -59,6 +81,7 @@ task cargoBuild {
 tasks.whenTaskAdded { task ->
     if ((task.name == 'javaPreCompileDebug' || task.name == 'javaPreCompileRelease')) {
         task.dependsOn 'cargoBuild'
+        task.dependsOn 'verifyTwoyiNativeLib'
     }
 }
 
@@ -89,7 +112,7 @@ dependencies {
     implementation 'org.apache.commons:commons-compress:1.20'
     implementation 'org.tukaani:xz:1.5'
 
-    implementation 'com.hzy:libp7zip:1.7.0'
+    implementation 'com.github.hzy3774:AndroidP7zip:v1.7.2'
 //    implementation "com.github.seven332.a7zip:extract:master-SNAPSHOT"
 //    implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.02'
 //    implementation 'com.victor:lib:1.0.4'
@@ -103,3 +126,4 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 }
+

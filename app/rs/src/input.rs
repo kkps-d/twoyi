@@ -98,7 +98,6 @@ pub fn input_event_write(
 pub fn handle_touch(ev: MotionEvent) {
     let opt = INPUT_SENDER.lock().unwrap();
     if let Some(ref fd) = *opt {
-
         let action = ev.action();
         let pointer_index = ev.pointer_index();
         let pointer = ev.pointer_at_index(pointer_index);

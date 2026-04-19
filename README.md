@@ -81,9 +81,32 @@ Twoyi is partially written in Rust, so it's nessesary to [install Rust and Cargo
 
 Please refer to [cargo-xdk](https://github.com/tiann/cargo-xdk).
 
-You can check if it is installed by running `./gradlew cargoBuild`. If it succeeded, you will see libtwoyi.so in `app/src/main/jniLibs/arm64-v8a`.
+#### Install Android NDK
 
-PS. Please use ndk v22 or lower, otherwise it may fail.
+Install Android NDK from Android Studio SDK Manager (`SDK Tools` -> `NDK (Side by side)`), then set:
+
+- `ANDROID_NDK_HOME=<your-ndk-root>`
+
+#### Build native Rust library (`libtwoyi.so`)
+
+From project root:
+
+```bash
+cd app/rs
+cargo xdk -t arm64-v8a -o ../src/main/jniLibs build --release
+```
+
+After it succeeds, `app/src/main/jniLibs/arm64-v8a/libtwoyi.so` should exist.
+
+If Gradle fails with `Missing native lib ... libtwoyi.so`, rebuild this library first.
+
+#### Build app
+
+```bash
+./gradlew assembleDebug
+```
+
+Note: for compatibility with prebuilt native/ROM pieces in this repository, keep `applicationId` as `io.twoyi` unless you also patch/rebuild those components.
 
 #### Integrating rootfs
 

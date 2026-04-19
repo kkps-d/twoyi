@@ -37,6 +37,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 
+import io.twoyi.BuildConfig;
 import io.twoyi.R;
 import io.twoyi.utils.AppKV;
 import io.twoyi.utils.LogEvents;
@@ -185,7 +186,7 @@ public class SettingsActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     Crashes.trackError(e);
                 }
-                Uri uri = FileProvider.getUriForFile(context, "io.twoyi.fileprovider", tmpLog);
+                Uri uri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".fileprovider", tmpLog);
 
                 Intent shareIntent = new Intent(Intent.ACTION_SEND);
                 shareIntent.putExtra(Intent.EXTRA_STREAM, uri);

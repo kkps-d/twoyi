@@ -206,7 +206,7 @@ public class Render2Activity extends Activity implements View.OnTouchListener {
             if (true) {
                 boolean success = false;
                 try {
-                    success = TwoyiStatusManager.getInstance().waitBoot(15, TimeUnit.SECONDS);
+                    success = TwoyiStatusManager.getInstance().waitBoot(120, TimeUnit.SECONDS);
                 } catch (Throwable ignored) {
                 }
 
